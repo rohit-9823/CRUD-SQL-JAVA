@@ -1,0 +1,175 @@
+
+import java.io.BufferedReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+public class App {
+    public static void main(String[] args) throws SQLException {
+        Scanner s = new Scanner(System.in);
+        String text;
+        do {
+            System.out.println("Student Management System");
+            System.out.println("1.  Insert Student Record");
+            System.out.println("2.  Update Student Record");
+            System.out.println("3.  Delete Student Record");
+            System.out.println("4.  View all Student Record");
+            System.out.println("5.  Exit ");
+            System.out.println("Enter choice(1-5): ");
+            int choice = s.nextInt();
+            switch (choice) {
+                case 1:
+                    insert();
+                    break;
+                case 2:
+                    System.out.println("Update Record");
+                    Update();
+                    break;
+                case 3:
+                    Delete();
+                    break;
+
+                case 4:
+                    Display();
+                    break;
+                case 5:
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid input");
+            }
+            System.out.println("Do you want to continue (y/n)");
+            text = s.next();
+
+        } while (text.equalsIgnoreCase("y"));
+        s.close();
+        System.out.println("Thank you ;)");
+    }
+
+    public static void insert() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            // create conn
+            String url = "jdbc:mysql://localhost:3306/crud";
+            String username = "root";
+            String password = "root";
+            Connection con = DriverManager.getConnection(url, username, password);
+            // query creation
+            String q = "insert into table1(id,fname,lname,address) values (?,?,?,?)";
+            PreparedStatement pstmt = con.prepareStatement(q);
+            BufferedReader br = new BufferedReader(new java.io.InputStreamReader(System.in));
+            System.out.println("enter id");
+            int s_id = Integer.parseInt(br.readLine());
+            System.out.println("enter first name");
+            String fname = br.readLine();
+            System.out.println("enter last name");
+            String lname = br.readLine();
+            System.out.println("enter address");
+            String address = br.readLine();
+            // set value to db
+            pstmt.setInt(1, s_id);
+            pstmt.setString(2, fname);
+            pstmt.setString(3, lname);
+            pstmt.setString(4, address);
+            pstmt.executeUpdate();
+            System.out.println("Inserted...");
+            // Update();
+        } catch (Exception e) {
+            System.out.println("BAKAYARO");
+        }
+    }
+
+    public static void Update() {
+        try {
+
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/crud", "root", "root");
+            String q = "UPDATE table1 SET fname=?,lname=?,address=? where id=?";
+            BufferedReader br = new BufferedReader(new java.io.InputStreamReader(System.in));
+            System.out.println("Enter ID: ");
+            int sid = Integer.parseInt(br.readLine());
+            PreparedStatement ps = con.prepareStatement("Select * from table1 WHERE id=?");
+            ps.setInt(1, sid);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                System.out.println("enter first name");
+                String fname = br.readLine();
+                System.out.println("enter last name");
+                String lname = br.readLine();
+                System.out.println("enter address");
+                String address = br.readLine();
+
+                PreparedStatement patnt = con.prepareStatement(q);
+                patnt.setString(1, fname);
+                patnt.setString(2, lname);
+                patnt.setString(3, address);
+                patnt.setInt(4, sid);
+                patnt.executeUpdate();
+                System.out.println("Record Successfully Updated: ");
+                con.close();
+
+            } else {
+                System.out.println("NO");
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void Delete() {
+
+        try {
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/crud", "root", "root");
+            String q = "DELETE FROM table1 where id=?";
+            BufferedReader br = new BufferedReader(new java.io.InputStreamReader(System.in));
+            System.out.println("Enter ID: ");
+            int sid = Integer.parseInt(br.readLine());
+            PreparedStatement ps = con.prepareStatement("Select * from table1 WHERE id=?");
+            ps.setInt(1, sid);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                PreparedStatement patnt = con.prepareStatement(q);
+                patnt.setInt(1, sid);
+                patnt.executeUpdate();
+                System.out.println("Record Successfully DELETED: ");
+                con.close();
+            } else {
+                System.out.println("NO");
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void Display() {
+        try {
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/crud", "root", "root");
+            Statement smt = con.createStatement();
+            // query to display all records from table employee
+            String q = "Select * from table1";
+            // to execute query
+            ResultSet rs = smt.executeQuery(q);
+            // to print the resultset on console
+            if (rs.next()) {
+                do {
+                    System.out.println("ID" + "\t" + "FName" + "\t" + "LName" + "\t" + "Address");
+                    System.out.println(
+                            rs.getString(1) + "\t" + rs.getString(2) + "\t" + rs.getString(3) + "\t" + rs.getString(4));
+                } while (rs.next());
+            } else {
+                System.out.println("Record Not Found...");
+            }
+            con.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+}
